@@ -1,4 +1,4 @@
-i   AlignChn ScoredChain  AlignResNum  AlignResType  AlignRespLDDT      n0chn  n0dom  n0res    d0chn     d0dom     d0res   ipTM_pae  ipSAE_d0chn ipSAE_d0dom    ipSAE 
+i   AlignChn ScoredChain  AlignResNum  AlignResType  AlignRespLDDT      n0chn  n0dom  n0res    d0chn     d0dom     d0res   ipTM_pae  ipSAE_d0chn ipSAE_d0dom    ipSAE
 1       A         B            1           GLY           48.28           259    237      0     5.949     5.708     1.039     0.0419      0.0000      0.0000      0.0000
 2       A         B            2           SER           59.41           259    237      0     5.949     5.708     1.039     0.0475      0.0000      0.0000      0.0000
 3       A         B            3           TRP           72.56           259    237      3     5.949     5.708     1.039     0.0843      0.1406      0.1310      0.0050

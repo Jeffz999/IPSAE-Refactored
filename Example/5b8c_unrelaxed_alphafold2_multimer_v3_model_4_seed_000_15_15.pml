@@ -19,4 +19,3 @@ alias color_B_C, color gray80, all; color marine, chain  B and resi 1-120; color
 # C    B     15   15   asym  0.863113    0.923924    0.923924    0.840    0.923924      0.5348     0.8976     0.7608     120    231    231    4.05    5.64    5.64    111     120      69      73   5b8c_unrelaxed_alphafold2_multimer_v3_model_4_seed_000
 # B    C     15   15   max   0.863113    0.924288    0.924288    0.840    0.924288      0.5348     0.8976     0.7531     120    231    231    4.05    5.64    5.64    120     111      73      69   5b8c_unrelaxed_alphafold2_multimer_v3_model_4_seed_000
 alias color_C_B, color gray80, all; color lime, chain  C and resi 1-111; color marine, chain  B and resi 1-120
-

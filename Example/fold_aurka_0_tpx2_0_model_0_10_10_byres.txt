@@ -1,4 +1,4 @@
-i   AlignChn ScoredChain  AlignResNum  AlignResType  AlignRespLDDT      n0chn  n0dom  n0res    d0chn     d0dom     d0res   ipTM_pae  ipSAE_d0chn ipSAE_d0dom    ipSAE 
+i   AlignChn ScoredChain  AlignResNum  AlignResType  AlignRespLDDT      n0chn  n0dom  n0res    d0chn     d0dom     d0res   ipTM_pae  ipSAE_d0chn ipSAE_d0dom    ipSAE
 1       A         B            1           TRP           95.06           319    305     40     6.538     6.408     1.826     0.6593      0.6931      0.6858      0.2109
 2       A         B            2           ALA           96.96           319    305     40     6.538     6.408     1.826     0.6874      0.7239      0.7170      0.2380
 3       A         B            3           LEU           97.81           319    305     40     6.538     6.408     1.826     0.7144      0.7524      0.7460      0.2694

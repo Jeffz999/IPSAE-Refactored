@@ -19,4 +19,3 @@ alias color_B_C, color gray80, all; color marine, chain  B and resi 1-119; color
 # C    B     10   10   asym  0.835189    0.906605    0.906605    0.900    0.906605      0.5176     0.8905     0.7076     120    231    231    4.05    5.64    5.64    111     120      34      37   fold_5b8c_model_0
 # B    C     10   10   max   0.835189    0.906605    0.906605    0.900    0.906605      0.5176     0.8905     0.7146     120    231    231    4.05    5.64    5.64    120     111      37      34   fold_5b8c_model_0
 alias color_C_B, color gray80, all; color lime, chain  C and resi 1-111; color marine, chain  B and resi 1-120
-

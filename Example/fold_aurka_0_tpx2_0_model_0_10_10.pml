@@ -5,4 +5,3 @@ alias color_A_B, color gray80, all; color magenta, chain  A and resi 1-264; colo
 # B    A     10   10   asym  0.866498    0.882996    0.877746    0.870    0.861157      0.5235     0.6278     0.6635     268    319    301    6.04    6.54    6.37     33     268      31      50   fold_aurka_0_tpx2_0_model_0
 # A    B     10   10   max   0.866498    0.882996    0.877746    0.870    0.861157      0.5235     0.7120     0.6560     268    319    301    6.04    6.54    6.37    268      41      52      34   fold_aurka_0_tpx2_0_model_0
 alias color_B_A, color gray80, all; color marine, chain  B and resi 6-23+29-43; color magenta, chain  A and resi 1-268
-

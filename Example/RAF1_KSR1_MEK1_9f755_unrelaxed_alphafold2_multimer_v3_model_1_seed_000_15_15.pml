@@ -19,4 +19,3 @@ alias color_B_C, color marine, chain  B and resi 605-619+626-641+650-679+681-700
 # C    B     15   15   asym  0.254861    0.543280    0.375205    0.530    0.261188      0.0189     0.0077     0.0990     281   1316    547    6.17   11.74    8.25    265     282       0       0   RAF1_KSR1_MEK1_9f755_unrelaxed_alphafold2_multimer_v3_model_1_seed_000
 # B    C     15   15   max   0.262946    0.543280    0.375205    0.530    0.477160      0.0189     0.0077     0.1003     316   1316    547    6.51   11.74    8.25    282     317       0       0   RAF1_KSR1_MEK1_9f755_unrelaxed_alphafold2_multimer_v3_model_1_seed_000
 alias color_C_B, color lime, chain  C and resi 45-60+62-75+81-90+92-207+219-222+227-237+241-266+270-271+274-275+308-326+330-365+370-378; color marine, chain  B and resi 597-762+764+768-882
-

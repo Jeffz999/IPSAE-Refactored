@@ -1,4 +1,4 @@
-i   AlignChn ScoredChain  AlignResNum  AlignResType  AlignRespLDDT      n0chn  n0dom  n0res    d0chn     d0dom     d0res   ipTM_pae  ipSAE_d0chn ipSAE_d0dom    ipSAE 
+i   AlignChn ScoredChain  AlignResNum  AlignResType  AlignRespLDDT      n0chn  n0dom  n0res    d0chn     d0dom     d0res   ipTM_pae  ipSAE_d0chn ipSAE_d0dom    ipSAE
 1       A         B            1           MET           15.22          1571    548      0    12.569     8.254     1.001     0.1378      0.0000      0.0000      0.0000
 2       A         B            2           GLU           14.59          1571    548      0    12.569     8.254     1.001     0.1378      0.0000      0.0000      0.0000
 3       A         B            3           HIS           14.09          1571    548      0    12.569     8.254     1.001     0.1378      0.0000      0.0000      0.0000

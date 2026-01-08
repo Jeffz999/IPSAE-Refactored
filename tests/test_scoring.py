@@ -1,10 +1,10 @@
 """Integration tests for scoring output against sample files."""
 
-from pathlib import Path
-import subprocess
-import tempfile
 import shutil
+import subprocess
 import sys
+import tempfile
+from pathlib import Path
 
 import pytest
 
@@ -157,7 +157,9 @@ class TestScoringOutputAF2:
                 normalize_whitespace(line) for line in f if line.strip()
             )
 
-        assert actual_lines == expected_lines, "PML content mismatch (sorted comparison)"
+        assert actual_lines == expected_lines, (
+            "PML content mismatch (sorted comparison)"
+        )
 
 
 @pytest.mark.skipif(
@@ -252,4 +254,6 @@ class TestScoringOutputAF3:
                 normalize_whitespace(line) for line in f if line.strip()
             )
 
-        assert actual_lines == expected_lines, "PML content mismatch (sorted comparison)"
+        assert actual_lines == expected_lines, (
+            "PML content mismatch (sorted comparison)"
+        )
