@@ -1,6 +1,7 @@
 """Utility functions for ipSAE."""
 
-from typing import overload
+from collections.abc import Iterable
+from typing import Any, overload
 
 import numpy as np
 
@@ -86,7 +87,10 @@ def init_chainpairdict_zeros(
 ) -> dict[str, dict[str, str]]: ...
 
 
-def init_chainpairdict_zeros(chainlist, zero=0):
+def init_chainpairdict_zeros(
+    chainlist: Iterable[Any],
+    zero: Any = 0,
+) -> dict[Any, dict[Any, Any]]:
     """Initialize a nested dictionary for chain pairs with zero values."""
     return {c1: {c2: zero for c2 in chainlist if c1 != c2} for c1 in chainlist}
 
