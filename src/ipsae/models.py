@@ -68,21 +68,62 @@ class Residue:
 
 
 @dataclass
+class LigandAtom:
+    """Represents a ligand atom with its coordinates and metadata.
+
+    Attributes
+    ----------
+        atom_num: Atom serial number.
+        coor: Numpy array of coordinates [x, y, z].
+        res: Residue name (3-letter code).
+        chainid: Chain identifier.
+        resnum: Residue sequence number.
+        atom_name: Atom name (e.g., 'C1').
+        element: Element symbol.
+        global_pae_idx: Index in the full PAE matrix.
+
+    """
+
+    atom_num: int
+    coor: np.ndarray
+    res: str
+    chainid: str
+    resnum: int
+    atom_name: str
+    element: str
+    global_pae_idx: int
+
+
+@dataclass
 class StructureData:
     """Container for parsed structure data.
 
     Attributes
     ----------
         residues: List of Residue objects (CA atoms).
+            Used as the "master list" of residues for metadata (Residue Number, Chain ID, Residue Name).
         cb_residues: List of Residue objects (CB atoms, or CA for Glycine).
+            Used for calculating distances, as sidechain (CB) distance is often more relevant for contacts.
         chains: Array of chain identifiers for each residue.
+            Used for indexing to quickly find all residues in a specific chain.
         unique_chains: Array of unique chain identifiers.
+            Used for iterating over every possible pair of chains.
         token_mask: Array indicating valid residues (1) vs ligands/others (0).
+            Used to filter the PAE matrix, ensuring scores are only calculated for protein/DNA chains.
         residue_types: Array of residue names.
+            Used for classifying chains (e.g., checking for nucleotides) to decide if it's protein or DNA/RNA.
         coordinates: Array of coordinates (CB atoms).
+            The raw X, Y, Z positions used to calculate the distances matrix.
         distances: Pairwise distance matrix between residues.
+            Critical geometric field used to decide if two residues are in "contact" (usually < 10 Angstroms).
         chain_pair_type: Dictionary mapping chain pairs to type ('protein' or 'nucleic_acid').
+            Used for choosing the right normalization formula (d0) for scores.
         numres: Total number of residues.
+            Used for sanity checks and initializing empty arrays.
+        ligand_atoms: List of LigandAtom objects.
+            Used for calculating ligand binding metrics.
+        protein_atoms: List of LigandAtom objects (all atoms of protein/NA).
+            Used for calculating ligand-protein contacts.
 
     """
 
@@ -96,6 +137,8 @@ class StructureData:
     distances: np.ndarray  # [n_res, n_res]
     chain_pair_type: dict[str, dict[str, str]]
     numres: int
+    ligand_atoms: list[LigandAtom]
+    protein_atoms: list[LigandAtom]
 
 
 @dataclass
@@ -104,7 +147,9 @@ class PAEData:
 
     Attributes
     ----------
-        pae_matrix: Predicted Aligned Error matrix.
+        pae_matrix: Predicted Aligned Error matrix (filtered for protein/NA).
+        full_pae_matrix: Full Predicted Aligned Error matrix (including ligands).
+        atom_plddts: Array of pLDDT scores for all tokens.
         plddt: Array of pLDDT scores (CA atoms).
         cb_plddt: Array of pLDDT scores (CB atoms).
         iptm_dict: Dictionary of ipTM scores for chain pairs.
@@ -114,6 +159,8 @@ class PAEData:
     """
 
     pae_matrix: np.ndarray
+    full_pae_matrix: np.ndarray
+    atom_plddts: np.ndarray
     plddt: np.ndarray
     cb_plddt: np.ndarray
     iptm_dict: dict[str, dict[str, float]]
@@ -187,7 +234,7 @@ class PerResScoreResults:
     @staticmethod
     def header_line() -> str:
         """Return the header line for the per-residue score output."""
-        return "i   AlignChn ScoredChain  AlignResNum  AlignResType  AlignRespLDDT      n0chn  n0dom  n0res    d0chn     d0dom     d0res   ipTM_pae  ipSAE_d0chn ipSAE_d0dom    ipSAE \n"
+        return "i   AlignChn ScoredChain  AlignResNum  AlignResType  AlignRespLDDT      n0chn  n0dom  n0res    d0chn     d0dom     d0res   ipTM_pae  ipSAE_d0chn ipSAE_d0dom    ipSAE\n"
 
 
 @dataclass
@@ -282,6 +329,53 @@ class ChainPairScoreResults:
 
 
 @dataclass
+class LigandScoreResults:
+    """Container for ligand binding score results.
+
+    Attributes:
+        LigandChn: chain identifier of the ligand
+        PAE: PAE cutoff value
+        Dist: Distance cutoff for contacts
+        ipTM: Average ipTM for the ligand chain
+        pLDDT: Average pLDDT for the ligand atoms
+        nligatoms: number of unique ligand atoms in contact
+        nres: number of unique protein residues in contact
+        npair: total number of atomic contacts
+        Model: AlphaFold filename
+
+    """
+
+    LigandChn: str
+    PAE: float
+    Dist: float
+    ipTM: float
+    pLDDT: float
+    nligatoms: int
+    nres: int
+    npair: int
+    Model: str
+
+    def to_formatted_line(self, end: str = "") -> str:
+        """Format the ligand result as a fixed-width string."""
+        return (
+            f"{self.LigandChn:<10} "
+            f"{self.PAE:4.1f}  "
+            f"{self.Dist:4.1f}  "
+            f"{self.ipTM:8.4f}  "
+            f"{self.pLDDT:8.2f}  "
+            f"{self.nligatoms:8d}  "
+            f"{self.nres:8d}  "
+            f"{self.npair:8d}  "
+            f"{self.Model}{end}"
+        )
+
+    @staticmethod
+    def header_line() -> str:
+        """Return the header line for the ligand summary output."""
+        return "LigandChn   PAE   Dist     ipTM      pLDDT    nligatoms     nres    npair  Model\n"
+
+
+@dataclass
 class ScoreResults:
     """Container for calculated scores and output data.
 
@@ -295,6 +389,7 @@ class ScoreResults:
         metrics: Dictionary of pDockQ, pDockQ2, and LIS scores for each chain pair.
         by_res_scores: Lists of per-residue scores.
         chain_pair_scores: List of chain-pair summary score results.
+        ligand_scores: List of ligand binding score results.
         pymol_script: List of formatted strings for PyMOL script.
 
     """
@@ -307,7 +402,6 @@ class ScoreResults:
     metrics: dict[str, dict[str, float]]  # {`<c1>_<c2>`: {metric_name: value}}
 
     by_res_scores: list[PerResScoreResults]
-    chain_pair_scores: list[
-        ChainPairScoreResults
-    ]  # List of chain-pair summary score results
+    chain_pair_scores: list[ChainPairScoreResults]
+    ligand_scores: list[LigandScoreResults]
     pymol_script: list[str]

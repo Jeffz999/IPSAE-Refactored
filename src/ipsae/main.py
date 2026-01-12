@@ -30,6 +30,8 @@ def ipsae(
     dist_cutoff: float,
     model_type: str | None = None,
     chain_groups: str | None = None,
+    ligand_pae_cutoff: float = 3.0,
+    ligand_dist_cutoff: float = 4.0,
 ) -> ScoreResults:
     """Calculate ipSAE, pDockQ, pDockQ2, and LIS scores for protein structure models.
 
@@ -70,7 +72,14 @@ def ipsae(
     # Calculate scores
     pdb_stem = structure_file.stem
     results = calculate_scores(
-        structure_data, pae_data, pae_cutoff, dist_cutoff, pdb_stem, parsed_chain_groups
+        structure=structure_data,
+        pae_data=pae_data,
+        pae_cutoff=pae_cutoff,
+        dist_cutoff=dist_cutoff,
+        ligand_pae_cutoff=ligand_pae_cutoff,
+        ligand_dist_cutoff=ligand_dist_cutoff,
+        label=pdb_stem,
+        chain_groups=parsed_chain_groups,
     )
     return results
 
@@ -93,6 +102,8 @@ def main():
         dist_cutoff=args.dist_cutoff,
         model_type=args.model_type.value,
         chain_groups=args.chain_groups,
+        ligand_pae_cutoff=args.ligand_pae_cutoff,
+        ligand_dist_cutoff=args.ligand_dist_cutoff,
     )
 
     if args.output_dir is not None:

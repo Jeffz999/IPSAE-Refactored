@@ -11,7 +11,9 @@ maintainers = [
     { name = "Yi Zhou", email = "me@y1zhou.com" },
 ]
 dependencies = [
+    "biopython>=1.86",
     "numpy<3.0",
+    "scipy>=1.15.3",
 ]
 
 [project.scripts]

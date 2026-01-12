@@ -7,6 +7,7 @@ import numpy as np
 from ipsae.constants import CHAIN_COLOR, LIS_PAE_CUTOFF
 from ipsae.models import (
     ChainPairScoreResults,
+    LigandScoreResults,
     PAEData,
     PerResScoreResults,
     Residue,
@@ -399,11 +400,98 @@ def aggregate_byres_scores(
     return chain_pair_scores, pymol_lines, results_metrics
 
 
+def calculate_ligand_scores(
+    structure: StructureData,
+    pae_data: PAEData,
+    label: str = "model",
+    ligand_dist_cutoff: float = 4.0,
+    ligand_pae_cutoff: float = 3.0,
+) -> list[LigandScoreResults]:
+    """Calculate binding metrics for ligands.
+
+    For each ligand, we find protein atoms within ligand_dist_cutoff.
+    We then filter these contacts by PAE < ligand_pae_cutoff.
+    """
+    if not structure.ligand_atoms:
+        return []
+
+    from scipy.spatial import KDTree
+
+    # Group ligand atoms by chain
+    ligand_chains = {}
+    for la in structure.ligand_atoms:
+        if la.chainid not in ligand_chains:
+            ligand_chains[la.chainid] = []
+        ligand_chains[la.chainid].append(la)
+
+    # Protein atoms for KDTree
+    protein_coords = np.array([pa.coor for pa in structure.protein_atoms])
+    if len(protein_coords) == 0:
+        return []
+
+    protein_tree = KDTree(protein_coords)
+
+    results = []
+    for chain_id, atoms in ligand_chains.items():
+        # Ligand atoms for this chain
+        lig_coords = np.array([a.coor for a in atoms])
+        lig_pae_indices = [a.global_pae_idx for a in atoms]
+
+        # Find protein atoms within distance cutoff
+        contacts = protein_tree.query_ball_point(lig_coords, ligand_dist_cutoff)
+
+        valid_lig_atoms = set()
+        valid_prot_residues = set()
+        total_pairs = 0
+
+        sum_plddt = 0.0
+
+        for i, prot_indices in enumerate(contacts):
+            lig_idx = lig_pae_indices[i]
+
+            # pLDDT for this ligand atom
+            if lig_idx < len(pae_data.atom_plddts):
+                sum_plddt += pae_data.atom_plddts[lig_idx]
+
+            has_valid_contact = False
+            for p_idx in prot_indices:
+                prot_atom = structure.protein_atoms[p_idx]
+                prot_idx = prot_atom.global_pae_idx
+
+                # Check PAE
+                pae_val = pae_data.full_pae_matrix[lig_idx, prot_idx]
+                if pae_val < ligand_pae_cutoff:
+                    valid_prot_residues.add((prot_atom.chainid, prot_atom.resnum))
+                    total_pairs += 1
+                    has_valid_contact = True
+
+            if has_valid_contact:
+                valid_lig_atoms.add(i)
+
+        results.append(
+            LigandScoreResults(
+                LigandChn=chain_id,
+                PAE=ligand_pae_cutoff,
+                Dist=ligand_dist_cutoff,
+                ipTM=0.0,  # Placeholder
+                pLDDT=float(sum_plddt / len(atoms)) if atoms else 0.0,
+                nligatoms=len(valid_lig_atoms),
+                nres=len(valid_prot_residues),
+                npair=total_pairs,
+                Model=label,
+            )
+        )
+
+    return results
+
+
 def calculate_scores(
     structure: StructureData,
     pae_data: PAEData,
     pae_cutoff: float = 10.0,
     dist_cutoff: float = 10.0,
+    ligand_pae_cutoff: float = 3.0,
+    ligand_dist_cutoff: float = 4.0,
     label: str = "model",
     chain_groups: list[tuple[list[str], list[str]]] | None = None,
 ) -> ScoreResults:
@@ -472,6 +560,11 @@ def calculate_scores(
         chains, chain_pairs, distances, pae_matrix, cb_plddt
     )
     LIS = calculate_lis(chains, chain_pairs, pae_matrix)
+
+    # --- Ligand Scores ---
+    ligand_scores = calculate_ligand_scores(
+        structure, pae_data, label, ligand_dist_cutoff, ligand_pae_cutoff
+    )
 
     # --- ipTM / ipSAE ---
     residues = structure.residues
@@ -688,5 +781,6 @@ def calculate_scores(
         metrics=results_metrics,
         by_res_scores=by_res_lines,
         chain_pair_scores=chain_pair_scores,
+        ligand_scores=ligand_scores,
         pymol_script=pymol_lines,
     )

@@ -88,6 +88,8 @@ def load_pae_data(
 
     # Initialize scores to be loaded
     pae_matrix = np.zeros((numres, numres))
+    full_pae_matrix = np.zeros((0, 0))
+    atom_plddts = np.zeros(0)
     plddt = np.zeros(numres)
     cb_plddt = np.zeros(numres)
     iptm_dict = init_chainpairdict_zeros(unique_chains.tolist(), 0.0)
@@ -104,6 +106,7 @@ def load_pae_data(
         if "plddt" in data:
             plddt = np.array(data["plddt"])
             cb_plddt = np.array(data["plddt"])  # for pDockQ
+            atom_plddts = plddt
         else:
             logger.warning(
                 f"pLDDT scores not found in {model_type.name} PAE file: {pae_path}"
@@ -117,6 +120,7 @@ def load_pae_data(
             logger.warning(
                 f"PAE matrix not found in {model_type.name} PAE file: {pae_path}"
             )
+        full_pae_matrix = pae_matrix
 
     elif model_type is InputModelType.Boltz1 or model_type is InputModelType.Boltz2:
         # Load pLDDT if file exists
@@ -126,6 +130,7 @@ def load_pae_data(
             data_plddt = load_obj_from_file(plddt_path)
             # Boltz plddt is 0-1, convert to 0-100
             plddt_boltz = np.array(100.0 * data_plddt["plddt"])
+            atom_plddts = plddt_boltz
 
             # Filter by token mask
             plddt = plddt_boltz[np.ix_(mask_bool)]
@@ -139,6 +144,7 @@ def load_pae_data(
         # Load PAE matrix
         data_pae = load_obj_from_file(pae_path)
         pae_full = np.array(data_pae["pae"])
+        full_pae_matrix = pae_full
         pae_matrix = pae_full[np.ix_(mask_bool, mask_bool)]
 
         # Load ipTM scores if summary file exists
@@ -181,6 +187,7 @@ def load_pae_data(
         # Modified residues have separate tokens for each atom, so need to pull out Calpha atom as token
         if "pae" in data:
             pae_full = np.array(data["pae"])
+            full_pae_matrix = pae_full
             pae_matrix = pae_full[np.ix_(mask_bool, mask_bool)]
         else:
             raise ValueError(
@@ -232,6 +239,7 @@ def load_pae_data(
             data_plddt = load_obj_from_file(plddt_path)
             # Chai-1 plddt is 0-1, convert to 0-100
             plddt_chai1 = np.array(100.0 * data_plddt)
+            atom_plddts = plddt_chai1
 
             # Filter by token mask
             plddt = plddt_chai1[np.ix_(mask_bool)]
@@ -244,6 +252,7 @@ def load_pae_data(
 
         # Load PAE matrix
         pae_full = load_obj_from_file(pae_path)
+        full_pae_matrix = pae_full
         pae_matrix = pae_full[np.ix_(mask_bool, mask_bool)]
 
         # Load ipTM scores if summary file exists
@@ -277,6 +286,8 @@ def load_pae_data(
 
     return PAEData(
         pae_matrix=pae_matrix,
+        full_pae_matrix=full_pae_matrix,
+        atom_plddts=atom_plddts,
         plddt=plddt,
         cb_plddt=cb_plddt,
         iptm_dict=iptm_dict,

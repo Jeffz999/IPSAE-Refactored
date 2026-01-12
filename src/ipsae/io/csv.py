@@ -36,3 +36,16 @@ def write_csv_outputs(results: ScoreResults, output_prefix: str | Path) -> None:
 
         for summary in results.chain_pair_scores:
             writer.writerow(asdict(summary))
+
+    # Write ligand scores if they exist
+    if results.ligand_scores:
+        ligand_csv_file = Path(f"{output_prefix}_ligands.csv")
+        fieldnames_lig = list(asdict(results.ligand_scores[0]).keys())
+        write_header_lig = not ligand_csv_file.exists()
+
+        with ligand_csv_file.open("a", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames_lig)
+            if write_header_lig:
+                writer.writeheader()
+            for ligand_res in results.ligand_scores:
+                writer.writerow(asdict(ligand_res))

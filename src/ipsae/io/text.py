@@ -2,7 +2,12 @@
 
 from pathlib import Path
 
-from ipsae.models import ChainPairScoreResults, PerResScoreResults, ScoreResults
+from ipsae.models import (
+    ChainPairScoreResults,
+    LigandScoreResults,
+    PerResScoreResults,
+    ScoreResults,
+)
 
 
 def write_text_outputs(results: ScoreResults, output_prefix: str | Path) -> None:
@@ -29,12 +34,12 @@ def write_text_outputs(results: ScoreResults, output_prefix: str | Path) -> None
         chain_pair_scores_file.write_text("\n" + ChainPairScoreResults.header_line())
 
     with chain_pair_scores_file.open("a") as f:
-        for summary in results.chain_pair_scores:
+        for i, summary in enumerate(results.chain_pair_scores):
             line_str = summary.to_formatted_line()
             if line_str not in existing_chain_pair_lines:
                 f.write(f"{line_str}\n")
-                # Add blank line after max rows to separate chain pair groups
-                if summary.Type == "max":
+                # Add blank line after max rows to separate chain pair groups, but not at the end
+                if summary.Type == "max" and i < len(results.chain_pair_scores) - 1:
                     f.write("\n")
 
     # For per-residue scores, overwrite each time
@@ -43,3 +48,13 @@ def write_text_outputs(results: ScoreResults, output_prefix: str | Path) -> None
         f.writelines(
             res_line.to_formatted_line(end="\n") for res_line in results.by_res_scores
         )
+
+    # Write ligand scores if they exist
+    if results.ligand_scores:
+        ligand_scores_file = Path(f"{output_prefix}_ligands.txt")
+        if not ligand_scores_file.exists():
+            ligand_scores_file.write_text(LigandScoreResults.header_line())
+
+        with ligand_scores_file.open("a") as f:
+            for ligand_res in results.ligand_scores:
+                f.write(ligand_res.to_formatted_line(end="\n"))

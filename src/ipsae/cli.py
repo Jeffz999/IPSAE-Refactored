@@ -19,6 +19,8 @@ class CliArgs:
     output_dir: Path | None
     chain_groups: str | None
     csv: bool
+    ligand_pae_cutoff: float
+    ligand_dist_cutoff: float
 
 
 def guess_model_type(pae_file: Path, structure_file: Path) -> InputModelType:
@@ -93,6 +95,18 @@ def parse_cli_args() -> CliArgs:
         action="store_true",
         help="Also output summary results in CSV format.",
     )
+    parser.add_argument(
+        "--ligand-pae-cutoff",
+        type=float,
+        default=3.0,
+        help="PAE cutoff for ligand binding (default: 3.0)",
+    )
+    parser.add_argument(
+        "--ligand-dist-cutoff",
+        type=float,
+        default=4.0,
+        help="Distance cutoff for ligand binding (default: 4.0)",
+    )
 
     input_args = parser.parse_args()
 
@@ -124,4 +138,6 @@ def parse_cli_args() -> CliArgs:
         output_dir=out_dir,
         chain_groups=input_args.chain_groups,
         csv=input_args.csv,
+        ligand_pae_cutoff=input_args.ligand_pae_cutoff,
+        ligand_dist_cutoff=input_args.ligand_dist_cutoff,
     )

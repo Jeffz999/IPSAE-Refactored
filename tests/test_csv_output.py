@@ -45,6 +45,7 @@ def test_write_csv_outputs(tmp_path):
         metrics={},
         by_res_scores=[],
         chain_pair_scores=[summary],
+        ligand_scores=[],
         pymol_script=[],
     )
 
