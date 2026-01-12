@@ -336,7 +336,8 @@ class LigandScoreResults:
         LigandChn: chain identifier of the ligand
         PAE: PAE cutoff value
         Dist: Distance cutoff for contacts
-        ipTM: Average ipTM for the ligand chain
+        ipSAE: Normalized ipSAE score (0-1)
+        iPAE: Average PAE for valid contacts
         pLDDT: Average pLDDT for the ligand atoms
         nligatoms: number of unique ligand atoms in contact
         nres: number of unique protein residues in contact
@@ -348,7 +349,7 @@ class LigandScoreResults:
     LigandChn: str
     PAE: float
     Dist: float
-    ipTM: float
+    ipSAE: float
     pLDDT: float
     nligatoms: int
     nres: int
@@ -361,7 +362,7 @@ class LigandScoreResults:
             f"{self.LigandChn:<10} "
             f"{self.PAE:4.1f}  "
             f"{self.Dist:4.1f}  "
-            f"{self.ipTM:8.4f}  "
+            f"{self.ipSAE:8.4f}  "
             f"{self.pLDDT:8.2f}  "
             f"{self.nligatoms:8d}  "
             f"{self.nres:8d}  "
@@ -372,7 +373,7 @@ class LigandScoreResults:
     @staticmethod
     def header_line() -> str:
         """Return the header line for the ligand summary output."""
-        return "LigandChn   PAE   Dist     ipTM      pLDDT    nligatoms     nres    npair  Model\n"
+        return "LigandChn   PAE   Dist    ipSAE      pLDDT    nligatoms     nres    npair  Model\n"
 
 
 @dataclass

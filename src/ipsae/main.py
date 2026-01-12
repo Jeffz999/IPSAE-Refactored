@@ -11,6 +11,7 @@ from ipsae.io.text import write_text_outputs
 from ipsae.models import (
     ChainPairScoreResults,
     InputModelType,
+    LigandScoreResults,
     PerResScoreResults,
     ScoreResults,
 )
@@ -133,6 +134,12 @@ def main():
         for summary in scores.chain_pair_scores:
             line_end = "\n" if summary.Type == "max" else ""
             print(summary.to_formatted_line(end="\n"), end=line_end)
+
+        if scores.ligand_scores:
+            print("\n\n" + "#" * 90 + "\n# Ligand scores\n" + "#" * 90)
+            print(LigandScoreResults.header_line())
+            for ligand_res in scores.ligand_scores:
+                print(ligand_res.to_formatted_line())
 
         print("\n\n" + "#" * 90 + "\n# PyMOL script\n" + "#" * 90)
         print("".join(scores.pymol_script))
