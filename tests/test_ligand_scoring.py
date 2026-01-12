@@ -66,7 +66,7 @@ def test_calculate_ligand_scores_logic():
     # Lig 1 to Prot 1: 2.0 (Passes < 3.0)
     # Lig 2 to Prot 2: 2.0 (Passes < 3.0)
     
-    scores = calculate_ligand_scores(structure, pae, ligand_dist_cutoff=4.0, ligand_pae_cutoff=3.0)
+    scores, _ = calculate_ligand_scores(structure, pae, ligand_dist_cutoff=4.0, ligand_pae_cutoff=3.0)
     
     assert len(scores) == 1
     res = scores[0]
@@ -77,6 +77,8 @@ def test_calculate_ligand_scores_logic():
     assert res.pLDDT == 85.0 # (90+80)/2
     assert res.PAE == 3.0 # Cutoff used
     assert res.Dist == 4.0 # Cutoff used
+    # ipSAE = 1 / (1 + (2.0/1.24)**2) = 1 / (1 + 2.60145) = 0.27766
+    assert pytest.approx(res.ipSAE, abs=1e-4) == 0.27766
 
 @pytest.mark.skipif(
     not list(LIGAND_DATA_DIR.glob("*.cif")),
@@ -102,6 +104,7 @@ def test_ligand_scoring_integration(tmp_path):
             "10", # Dist cutoff
             "-o",
             str(output_dir),
+            "--csv",
         ],
         capture_output=True,
         text=True,

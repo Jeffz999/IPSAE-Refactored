@@ -22,25 +22,16 @@ def write_text_outputs(results: ScoreResults, output_prefix: str | Path) -> None
         output_prefix: The prefix for the output filenames (including path).
 
     """
-    # Append to file if it exists, since we may be processing multiple models
-    # or comparing different input parameters
+    # Overwrite files by default
     chain_pair_scores_file = Path(f"{output_prefix}.txt")
-    if chain_pair_scores_file.exists():
-        existing_chain_pair_lines = set(
-            chain_pair_scores_file.read_text().strip().splitlines()
-        )
-    else:
-        existing_chain_pair_lines = set()
-        chain_pair_scores_file.write_text("\n" + ChainPairScoreResults.header_line())
-
-    with chain_pair_scores_file.open("a") as f:
+    with chain_pair_scores_file.open("w") as f:
+        f.write("\n" + ChainPairScoreResults.header_line())
         for i, summary in enumerate(results.chain_pair_scores):
             line_str = summary.to_formatted_line()
-            if line_str not in existing_chain_pair_lines:
-                f.write(f"{line_str}\n")
-                # Add blank line after max rows to separate chain pair groups, but not at the end
-                if summary.Type == "max" and i < len(results.chain_pair_scores) - 1:
-                    f.write("\n")
+            f.write(f"{line_str}\n")
+            # Add blank line after max rows to separate chain pair groups, but not at the end
+            if summary.Type == "max" and i < len(results.chain_pair_scores) - 1:
+                f.write("\n")
 
     # For per-residue scores, overwrite each time
     with Path(f"{output_prefix}_byres.txt").open("w") as f:
@@ -52,9 +43,7 @@ def write_text_outputs(results: ScoreResults, output_prefix: str | Path) -> None
     # Write ligand scores if they exist
     if results.ligand_scores:
         ligand_scores_file = Path(f"{output_prefix}_ligands.txt")
-        if not ligand_scores_file.exists():
-            ligand_scores_file.write_text(LigandScoreResults.header_line())
-
-        with ligand_scores_file.open("a") as f:
+        with ligand_scores_file.open("w") as f:
+            f.write(LigandScoreResults.header_line())
             for ligand_res in results.ligand_scores:
                 f.write(ligand_res.to_formatted_line(end="\n"))
