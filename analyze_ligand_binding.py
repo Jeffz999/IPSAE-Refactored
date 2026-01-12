@@ -6,7 +6,7 @@ import sys
 import glob
 import os
 
-def get_af3_scores(cif_path, ligand_chain='D'):
+def get_af3_scores(cif_path, ligand_chain='G'):
     base_name = os.path.basename(cif_path).replace('_model.cif', '')
     summary_path = cif_path.replace('_model.cif', '_summary_confidences.json')
     pae_path = cif_path.replace('_model.cif', '_confidences.json')
