@@ -453,33 +453,36 @@ def calculate_ligand_scores(
             if lig_idx < len(pae_data.atom_plddts):
                 sum_plddt += pae_data.atom_plddts[lig_idx]
 
-            atom_has_contact = False
             for p_tree_idx in prot_indices:
                 prot_atom = structure.protein_atoms[p_tree_idx]
                 prot_idx = prot_atom.global_pae_idx
 
                 # Get Raw PAE
+                # Note: PAE matrix is [aligned_residue, scored_residue]
+                # ChimeraX uses pae.value(ra1, ra2) which is matrix[ra1_idx, ra2_idx]
+                # Here we use lig_idx as aligned, prot_idx as scored.
                 pae_val = pae_data.full_pae_matrix[lig_idx, prot_idx]
 
                 # Filter by confidence
-                if pae_val < ligand_pae_cutoff:
+                if pae_val <= ligand_pae_cutoff:
                     # Normalized Score Sum (for ipSAE)
                     # Formula: 1 / (1 + (PAE / d0)^2)
                     norm_score = 1.0 / (1.0 + (pae_val / d0_scaling) ** 2)
                     sum_normalized_score += norm_score
 
                     valid_prot_residues.add((prot_atom.chainid, prot_atom.resnum))
+                    valid_lig_atoms.add(i)
                     total_valid_pairs += 1
-                    atom_has_contact = True
-
-            if atom_has_contact:
-                valid_lig_atoms.add(i)
 
         # Final Averaging
-        num_atoms = len(atoms)
-        avg_plddt = (sum_plddt / num_atoms) if num_atoms > 0 else 0.0
+        # Note: ChimeraX often averages pLDDT over the selection.
+        # If the user feedback implies avg_plddt is for the ligand, we keep it as is.
+        # For AF3/Boltz, we should only average over atoms that have PAE data.
+        num_atoms_with_plddt = sum(1 for i in range(len(atoms)) if lig_pae_indices[i] < len(pae_data.atom_plddts))
+        avg_plddt = (sum_plddt / num_atoms_with_plddt) if num_atoms_with_plddt > 0 else 0.0
 
         if total_valid_pairs > 0:
+            # ipSAE is the average normalized score over all valid contact pairs
             final_norm_ipsae = float(sum_normalized_score / total_valid_pairs)
         else:
             final_norm_ipsae = 0.0  # Min score

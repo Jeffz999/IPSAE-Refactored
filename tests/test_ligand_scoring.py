@@ -124,3 +124,37 @@ def test_ligand_scoring_integration(tmp_path):
         content = f.read()
         assert "Ligand" in content
         assert "npair" in content
+
+def test_elv_ligand_scoring():
+    """Test ligand scoring with elvitegravir AlphaFold 3 data."""
+    elv_dir = Path(__file__).parent / "data" / "elv"
+    cif_file = elv_dir / "elvitegravir_model.cif"
+    pae_file = elv_dir / "elvitegravir_confidences.json"
+    
+    if not cif_file.exists() or not pae_file.exists():
+        pytest.skip("Elvitegravir test data missing")
+        
+    from ipsae.main import ipsae
+    
+    # Metrics from user: pLDDT=92, natom=26, nres=14, npair=44
+    # Note: User said PAE<3A/dist<4A
+    results = ipsae(
+        pae_file=pae_file,
+        structure_file=cif_file,
+        pae_cutoff=15.0, # Default protein PAE cutoff
+        dist_cutoff=15.0, # Default protein dist cutoff
+        ligand_pae_cutoff=3.0,
+        ligand_dist_cutoff=4.0
+    )
+    
+    assert results.ligand_scores, "No ligand scores calculated for elvitegravir"
+    
+    # Find elvitegravir score (should be only one)
+    score = results.ligand_scores[0]
+    
+    # Check metrics
+    # User provided: pLDDT=92, natom=26, nres=14, npair=44
+    assert round(score.pLDDT) == 92
+    assert score.nligatoms == 26
+    assert score.nres == 14
+    assert score.npair == 44

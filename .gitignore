@@ -194,3 +194,5 @@ cython_debug/
 .cursorindexingignore
 
 tests/data/ligand_test/*
+
+chimerax_code/
